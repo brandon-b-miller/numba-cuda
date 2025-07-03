@@ -847,7 +847,7 @@ class CUDADispatcher(Dispatcher, serialize.ReduceMixin):
         # the CUDA Array Interface.
         try:
             return typeof(val, Purpose.argument)
-        except ValueError:
+        except (ValueError, RuntimeError):
             if cuda.is_cuda_array(val):
                 # When typing, we don't need to synchronize on the array's
                 # stream - this is done when the kernel is launched.
