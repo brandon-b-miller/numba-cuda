@@ -155,6 +155,7 @@ extern "C" __device__ void* NRT_Allocate_External(size_t size) {
 */
 extern "C" __device__ void NRT_decref(NRT_MemInfo* mi)
 {
+  printf("Inside NRT Decref\n");
   if (mi != NULL) {
     mi->refct--;
     if (mi->refct == 0) { NRT_MemInfo_call_dtor(mi); }
@@ -166,6 +167,7 @@ extern "C" __device__ void NRT_decref(NRT_MemInfo* mi)
 
 extern "C" __device__ void NRT_incref(NRT_MemInfo* mi)
 {
+  printf("Inside NRT Incref\n");
   if (mi != NULL) {
     mi->refct++;
   }
