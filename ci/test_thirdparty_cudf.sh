@@ -43,8 +43,9 @@ python -m numba --sysinfo
 rapids-logger "Run Scalar UDF tests"
 python -m pytest python/cudf/cudf/tests/dataframe/methods/test_apply.py -W ignore::UserWarning
 
-rapids-logger "Run GroupBy UDF tests"
-python -m pytest python/cudf/cudf/tests/groupby/test_apply.py -k test_groupby_apply_jit -W ignore::UserWarning
+rapids-logger "Run GroupBy UDF tests and relevant non-JIT tests"
+# Some non-jit tests hit the JIT api to determine jittable-ness of functions
+python -m pytest python/cudf/cudf/tests/groupby/test_apply.py -k test_groupby_apply -W ignore::UserWarning
 
 rapids-logger "Run NRT Stats Counting tests"
 python -m pytest python/cudf/cudf/tests/private_objects/test_nrt_stats.py  -W ignore::UserWarning
