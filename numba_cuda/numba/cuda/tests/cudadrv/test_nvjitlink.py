@@ -43,12 +43,6 @@ if TEST_BIN_DIR:
         TEST_BIN_DIR, "test_device_functions.ltoir"
     )
 
-    require_cuobjdump = (
-        test_device_functions_fatbin_multi,
-        test_device_functions_fatbin,
-        test_device_functions_o,
-    )
-
 
 @unittest.skipIf(
     not TEST_BIN_DIR or not _have_nvjitlink(),
@@ -123,34 +117,32 @@ class TestLinker(CUDATestCase):
 )
 @skip_on_cudasim("Linking unsupported in the simulator")
 class TestLinkerDumpAssembly(CUDATestCase):
+    """
+    Tests that require config.DUMP_ASSEMBLY to be enabled. The setUp/tearDown
+    methods ensure that DUMP_ASSEMBLY is enabled for each test and restored
+    afterwards.
+    """
+
     def setUp(self):
         super().setUp()
-        # Save previous value and enable dumping assembly for these tests.
-        self._old_dump = config.DUMP_ASSEMBLY
+        # Save previous value and enable dump assembly for the test.
+        self._prev_dump_assembly = config.DUMP_ASSEMBLY
         config.DUMP_ASSEMBLY = True
 
     def tearDown(self):
-        # Restore previous value regardless of skip/failure.
-        config.DUMP_ASSEMBLY = self._old_dump
+        # Restore previous value.
+        config.DUMP_ASSEMBLY = self._prev_dump_assembly
         super().tearDown()
 
     def test_nvjitlink_jit_with_linkable_code_lto_dump_assembly(self):
-        files = (
+        files = [
             test_device_functions_cu,
             test_device_functions_ltoir,
             test_device_functions_fatbin_multi,
-        )
+        ]
 
         for file in files:
             with self.subTest(file=file):
-                if (
-                    file in require_cuobjdump
-                    and os.getenv("NUMBA_CUDA_TEST_WHEEL_ONLY") is not None
-                ):
-                    self.skipTest(
-                        "wheel-only environments do not have cuobjdump"
-                    )
-
                 f = io.StringIO()
                 with contextlib.redirect_stdout(f):
                     sig = "uint32(uint32, uint32)"
@@ -167,24 +159,16 @@ class TestLinkerDumpAssembly(CUDATestCase):
                 self.assertTrue("ASSEMBLY (AFTER LTO)" in f.getvalue())
 
     def test_nvjitlink_jit_with_linkable_code_lto_dump_assembly_warn(self):
-        files = (
+        files = [
             test_device_functions_a,
             test_device_functions_cubin,
             test_device_functions_fatbin,
             test_device_functions_o,
             test_device_functions_ptx,
-        )
+        ]
 
         for file in files:
             with self.subTest(file=file):
-                if (
-                    file in require_cuobjdump
-                    and os.getenv("NUMBA_CUDA_TEST_WHEEL_ONLY") is not None
-                ):
-                    self.skipTest(
-                        "wheel-only environments do not have cuobjdump"
-                    )
-
                 sig = "uint32(uint32, uint32)"
                 add_from_numba = cuda.declare_device("add_from_numba", sig)
 
